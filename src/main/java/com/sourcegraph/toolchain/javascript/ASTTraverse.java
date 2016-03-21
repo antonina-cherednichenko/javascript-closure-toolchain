@@ -23,7 +23,6 @@ public class ASTTraverse {
         //options.setInferTypes(true);
         options.setNewTypeInference(true);
         initCompilerOptions();
-        options.enableRuntimeTypeCheck("console.log");
 
         CompilationLevel.ADVANCED_OPTIMIZATIONS.setOptionsForCompilationLevel(
                 options);
@@ -36,11 +35,12 @@ public class ASTTraverse {
         options.setCodingConvention(new ClosureCodingConvention());
         options.setLanguage(CompilerOptions.LanguageMode.ECMASCRIPT5);
 
+
         //CommonJs modules work
         options.setProcessCommonJSModules(true);
 
         //AMD modules
-        //options.setTransformAMDToCJSModules(true);
+        options.setTransformAMDToCJSModules(true);
 
         options.setIdeMode(true);
 
@@ -64,12 +64,13 @@ public class ASTTraverse {
         for (String filePath : externFilePaths) {
             File file = new File(filePath);
             try {
-                System.out.println("file name = " + file.getName());
-                externs.add(SourceFile.fromCode(file.getName(), FileUtils.readFileToString(file)));
+                externs.add(SourceFile.fromCode(file.getAbsolutePath(), FileUtils.readFileToString(file)));
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+
+        //compiler.parse();
         compiler.compile(externs, inputs, options);
         table = compiler.buildKnownSymbolTable();
     }
@@ -105,8 +106,6 @@ public class ASTTraverse {
                             } else {
                                 System.out.println("Null symbol for node = " + node);
                             }
-
-                            //System.out.println(node);
                         }
 
                     } else {
@@ -114,16 +113,12 @@ public class ASTTraverse {
                         SymbolTable.Symbol symbol = table.getEnclosingScope(node).getQualifiedSlot(node.getQualifiedName());
                         if (symbol != null) {
                             System.out.println("USAGE for = " + symbol.getName() + ", type = " + symbol.getType());
-                            System.out.println(node.getTypeI());
-                            System.out.println("FN type = " + symbol.getFunctionType());
-                            System.out.println(node.getLineno() + ", " + node.getCharno());
+                            System.out.println(node.getLineno() + ", " + node.getCharno() + "," + node.getSourceFileName());
                             System.out.println("DECL = " + symbol.getDeclarationNode().getQualifiedName() + " = " + symbol.getDeclarationNode().getLineno() + ", " + symbol.getDeclarationNode().getCharno()
-                                    + ", " + symbol.getDeclarationNode().getSourceFileName() + symbol.getDeclarationNode().getTypeI());
+                                    + ", " + symbol.getDeclarationNode().getSourceFileName());
                         } else {
                             System.out.println("Null symbol for node = " + node);
                         }
-
-                        //System.out.println(node);
                     }
                 }
                 //System.out.println(node);
@@ -132,10 +127,9 @@ public class ASTTraverse {
             }
         };
 
-
         Node top = compiler.getRoot();
 
-        //System.out.println(top.toStringTree());
+        System.out.println(top.toStringTree());
         NodeTraversal.traverseEs6(compiler, top, cb);
         System.out.println(compiler.toSource());
 

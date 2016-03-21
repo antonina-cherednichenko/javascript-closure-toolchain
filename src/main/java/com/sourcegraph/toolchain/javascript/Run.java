@@ -19,20 +19,51 @@ public class Run {
         List<String> inputFilePaths = new ArrayList<String>();
         List<String> externFilePaths = new ArrayList<String>();
 
-        inputFilePaths.add(args[0]);
+        File input = new File(args[0]);
+        if (input.isDirectory()) {
+            Collection<File> inputFiles = FileUtils.listFiles(input,
+                    new RegexFileFilter("^(.*js)"),
+                    DirectoryFileFilter.DIRECTORY
+            );
 
-
-        Collection<File> externFiles = FileUtils.listFiles(new File(args[1]),
-                new RegexFileFilter("^(.*js)"),
-                DirectoryFileFilter.DIRECTORY
-        );
-
-        for (File externFile : externFiles) {
-            externFilePaths.add(externFile.getAbsolutePath());
-            System.out.println(externFile.getPath());
-
+            for (File inputFile : inputFiles) {
+                inputFilePaths.add(inputFile.getAbsolutePath());
+            }
+        } else {
+            inputFilePaths.add(input.getAbsolutePath());
         }
 
+
+        File extern = new File(args[1]);
+        if (extern.isDirectory()) {
+            Collection<File> externFiles = FileUtils.listFiles(extern,
+                    new RegexFileFilter("^(.*js)"),
+                    DirectoryFileFilter.DIRECTORY
+            );
+
+            for (File externFile : externFiles) {
+                externFilePaths.add(externFile.getAbsolutePath());
+            }
+        } else {
+            externFilePaths.add(extern.getAbsolutePath());
+        }
+
+//        File extern2 = new File("/Users/tonya/closure-compiler/contrib/nodejs");
+//        if (extern2.isDirectory()) {
+//            Collection<File> externFiles = FileUtils.listFiles(extern2,
+//                    new RegexFileFilter("^(.*js)"),
+//                    DirectoryFileFilter.DIRECTORY
+//            );
+//
+//            for (File externFile : externFiles) {
+//                inputFilePaths.add(externFile.getAbsolutePath());
+//                externFilePaths.add(externFile.getAbsolutePath());
+//            }
+//        }
+
+
+        //inputFilePaths.add("/Users/tonya/javascript-tests/javascript-nodejs-sample-0/node_modules/should/lib/should.js");
+        //inputFilePaths.add("/Users/tonya/javascript-tests/javascript-nodejs-sample-0/node_modules/should/lib/eql.js");
 
         ASTTraverse tree = new ASTTraverse(inputFilePaths, externFilePaths);
         tree.traverse();
